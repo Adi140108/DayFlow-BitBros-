@@ -7,18 +7,20 @@ void main() {
   runApp(const ProviderScope(child: DayflowApp()));
 }
 
-class DayflowApp extends StatelessWidget {
+class DayflowApp extends ConsumerWidget {
   const DayflowApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
+
     return MaterialApp.router(
       title: 'Dayflow HRMS',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
-      routerConfig: kAppRouter,
+      routerConfig: router,
     );
   }
 }

@@ -1,13 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/auth/auth_notifier.dart';
 import '../../core/components/app_button.dart';
 import '../../core/components/app_text_field.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_typography.dart';
 import 'auth_layout.dart';
 
-/// Sign In visual presentation layout (no Firebase Auth coupling).
-class SignInPresentation extends StatelessWidget {
+/// Sign In visual presentation layout connected to Firebase Auth.
+class SignInPresentation extends ConsumerStatefulWidget {
   const SignInPresentation({super.key});
+
+  @override
+  ConsumerState<SignInPresentation> createState() => _SignInPresentationState();
+}
+
+class _SignInPresentationState extends ConsumerState<SignInPresentation> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _isLoading = false;
+  String? _error;
 
   @override
   Widget build(BuildContext context) {
@@ -17,15 +31,17 @@ class SignInPresentation extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const AppTextField(
+          AppTextField(
             label: 'Work Email',
             hintText: 'name@company.com',
+            controller: _emailController,
             keyboardType: TextInputType.emailAddress,
           ),
           const SizedBox(height: AppSpacing.md),
-          const AppTextField(
+          AppTextField(
             label: 'Password',
             hintText: '••••••••',
+            controller: _passwordController,
             isPassword: true,
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -37,11 +53,20 @@ class SignInPresentation extends StatelessWidget {
               size: AppButtonSize.small,
             ),
           ),
+          if (_error != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              _error!,
+              style: AppTypography.caption.copyWith(color: AppColors.error),
+              textAlign: TextAlign.center,
+            ),
+          ],
           const SizedBox(height: AppSpacing.lg),
           AppButton(
             label: 'Sign In',
             isFullWidth: true,
-            onPressed: () => context.go('/dashboard'),
+            isLoading: _isLoading,
+            onPressed: _handleSignIn,
           ),
           const SizedBox(height: AppSpacing.md),
           Row(
@@ -58,5 +83,29 @@ class SignInPresentation extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _handleSignIn() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      setState(() => _error = 'Please enter both email and password.');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      await ref.read(authNotifierProvider).signIn(email, password);
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
   }
 }
