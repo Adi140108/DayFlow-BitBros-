@@ -27,20 +27,20 @@ class _SignInPresentationState extends ConsumerState<SignInPresentation> {
   Widget build(BuildContext context) {
     return AuthLayout(
       title: 'Welcome Back',
-      subtitle: 'Sign in to access your Dayflow HR workspace',
+      subtitle: 'Sign in to your Dayflow workspace',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           AppTextField(
-            label: 'Work Email',
-            hintText: 'name@company.com',
+            label: 'Email',
+            hintText: 'you@example.com',
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
           ),
           const SizedBox(height: AppSpacing.md),
           AppTextField(
             label: 'Password',
-            hintText: '••••••••',
+            hintText: 'Enter your password',
             controller: _passwordController,
             isPassword: true,
           ),
@@ -55,10 +55,27 @@ class _SignInPresentationState extends ConsumerState<SignInPresentation> {
           ),
           if (_error != null) ...[
             const SizedBox(height: AppSpacing.sm),
-            Text(
-              _error!,
-              style: AppTypography.caption.copyWith(color: AppColors.error),
-              textAlign: TextAlign.center,
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.error_outline, color: AppColors.error, size: 18),
+                  const SizedBox(width: AppSpacing.xs),
+                  Expanded(
+                    child: Text(
+                      _error!,
+                      style: AppTypography.caption.copyWith(color: AppColors.error),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
           const SizedBox(height: AppSpacing.lg),
@@ -68,11 +85,14 @@ class _SignInPresentationState extends ConsumerState<SignInPresentation> {
             isLoading: _isLoading,
             onPressed: _handleSignIn,
           ),
-          const SizedBox(height: AppSpacing.md),
+          const SizedBox(height: AppSpacing.lg),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Don't have an account?"),
+              Text(
+                "Don't have an account?",
+                style: AppTypography.bodySmall,
+              ),
               AppButton.text(
                 label: 'Sign Up',
                 onPressed: () => context.go('/auth/register'),
@@ -102,8 +122,19 @@ class _SignInPresentationState extends ConsumerState<SignInPresentation> {
     try {
       await ref.read(authNotifierProvider).signIn(email, password);
     } catch (e) {
+      final errStr = e.toString();
+      String msg = errStr;
+      if (errStr.contains('user-not-found') || errStr.contains('INVALID_LOGIN_CREDENTIALS')) {
+        msg = 'No account found with this email. Please sign up first.';
+      } else if (errStr.contains('wrong-password')) {
+        msg = 'Incorrect password. Please try again.';
+      } else if (errStr.contains('invalid-email')) {
+        msg = 'Please enter a valid email address.';
+      } else if (errStr.contains('too-many-requests')) {
+        msg = 'Too many attempts. Please try again later.';
+      }
       setState(() {
-        _error = e.toString();
+        _error = msg;
         _isLoading = false;
       });
     }

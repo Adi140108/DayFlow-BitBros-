@@ -42,7 +42,7 @@ class AppDropdown<T> extends StatelessWidget {
           const SizedBox(height: AppSpacing.xxs),
         ],
         DropdownButtonFormField<T>(
-          value: value,
+          initialValue: value,
           items: items,
           onChanged: onChanged,
           icon: Icon(
@@ -153,7 +153,7 @@ class AppSwitch extends StatelessWidget {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: AppColors.primary,
+          activeThumbColor: AppColors.primary,
         ),
       ],
     );

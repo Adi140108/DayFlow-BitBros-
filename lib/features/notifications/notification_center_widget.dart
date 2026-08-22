@@ -88,9 +88,10 @@ class _NotificationCenterWidgetState extends ConsumerState<NotificationCenterWid
                     onPressed: () async {
                       final session = ref.read(authNotifierProvider).state;
                       if (session.user != null) {
+                        final nav = Navigator.of(context);
                         await _notifRepo.markAllAsRead(session.user!.uid);
                         _loadNotifications();
-                        Navigator.of(context).pop();
+                        if (mounted) nav.pop();
                       }
                     },
                     child: const Text('Mark all as read'),
@@ -118,9 +119,10 @@ class _NotificationCenterWidgetState extends ConsumerState<NotificationCenterWid
                         title: Text(n.title, style: AppTypography.label),
                         subtitle: Text(n.message, style: AppTypography.bodySmall),
                         onTap: () async {
+                          final nav = Navigator.of(context);
                           await _notifRepo.markAsRead(n.id);
                           _loadNotifications();
-                          if (mounted) Navigator.of(context).pop();
+                          if (mounted) nav.pop();
                         },
                       );
                     },

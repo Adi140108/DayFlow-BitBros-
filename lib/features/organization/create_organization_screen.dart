@@ -9,6 +9,8 @@ import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 
+import '../../core/components/app_select.dart';
+
 /// Screen for creating a new Organization (Onboarding).
 class CreateOrganizationScreen extends ConsumerStatefulWidget {
   const CreateOrganizationScreen({super.key});
@@ -20,8 +22,24 @@ class CreateOrganizationScreen extends ConsumerStatefulWidget {
 class _CreateOrganizationScreenState extends ConsumerState<CreateOrganizationScreen> {
   final _nameController = TextEditingController();
   final _legalNameController = TextEditingController();
+  String _institutionType = 'corporate';
+  String _adminRole = 'owner';
   bool _isLoading = false;
   String? _error;
+
+  final List<DropdownMenuItem<String>> _institutionItems = const [
+    DropdownMenuItem(value: 'corporate', child: Text('Corporate Business / Tech Company')),
+    DropdownMenuItem(value: 'education', child: Text('Educational Institution / University / School')),
+    DropdownMenuItem(value: 'startup', child: Text('Startup / Small Business')),
+    DropdownMenuItem(value: 'nonprofit', child: Text('Non-Profit Organization / NGO')),
+    DropdownMenuItem(value: 'government', child: Text('Government / Public Sector')),
+  ];
+
+  final List<DropdownMenuItem<String>> _roleItems = const [
+    DropdownMenuItem(value: 'owner', child: Text('Organization Owner & Founder')),
+    DropdownMenuItem(value: 'hr_admin', child: Text('Chief Human Resources Officer (CHRO) / HR Admin')),
+    DropdownMenuItem(value: 'director', child: Text('Director / Executive Administrator')),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -67,13 +85,31 @@ class _CreateOrganizationScreenState extends ConsumerState<CreateOrganizationScr
                   ),
                   const SizedBox(height: AppSpacing.xl),
                   AppTextField(
-                    label: 'Organization Name',
-                    hintText: 'e.g. Acme Corp',
+                    label: 'Organization / Institution Name',
+                    hintText: 'e.g. Acme Corp / Stanford University',
                     controller: _nameController,
                   ),
                   const SizedBox(height: AppSpacing.md),
+                  AppDropdown<String>(
+                    label: 'Institution Type / Industry Sector',
+                    value: _institutionType,
+                    items: _institutionItems,
+                    onChanged: (val) {
+                      if (val != null) setState(() => _institutionType = val);
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  AppDropdown<String>(
+                    label: 'Your Role in Institution',
+                    value: _adminRole,
+                    items: _roleItems,
+                    onChanged: (val) {
+                      if (val != null) setState(() => _adminRole = val);
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.md),
                   AppTextField(
-                    label: 'Legal Name (Optional)',
+                    label: 'Legal Entity Name (Optional)',
                     hintText: 'e.g. Acme Corporation LLC',
                     controller: _legalNameController,
                   ),

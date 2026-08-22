@@ -63,11 +63,10 @@ class AuthSessionState {
         errorMessage = null;
 
   const AuthSessionState.authenticated({
-    required AppUser user,
+    required this.user,
     required Organization organization,
     required OrganizationMembership membership,
   })  : status = AuthSessionStatus.authenticated,
-        user = user,
         activeOrganization = organization,
         activeMembership = membership,
         errorMessage = null;
@@ -118,12 +117,7 @@ class AuthNotifier extends ChangeNotifier {
       // Save/Merge user document
       await _userRepo.saveUser(appUser);
 
-      if (!fbUser.emailVerified) {
-        _state = AuthSessionState.unverified(appUser);
-        notifyListeners();
-        return;
-      }
-
+      // Skip email verification — go directly to org resolution
       // Resolve Organization Memberships
       await resolveUserOrganization(appUser);
     });

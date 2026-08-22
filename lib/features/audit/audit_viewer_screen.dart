@@ -18,31 +18,52 @@ class _AuditViewerScreenState extends ConsumerState<AuditViewerScreen> {
   final _auditRepo = AuditRepository();
   List<AuditLogItem> _logs = [];
   bool _isLoading = true;
+  String? _loadedOrgId;
 
   @override
   void initState() {
     super.initState();
-    _loadAuditLogs();
+    _checkAndLoad();
   }
 
-  Future<void> _loadAuditLogs() async {
+  void _checkAndLoad() {
     final session = ref.read(authNotifierProvider).state;
-    if (session.activeOrganization == null) return;
-
-    setState(() => _isLoading = true);
-    try {
-      final list = await _auditRepo.getAuditLogs(session.activeOrganization!.id);
-      setState(() {
-        _logs = list;
-        _isLoading = false;
-      });
-    } catch (e) {
+    final orgId = session.activeOrganization?.id;
+    if (orgId != null) {
+      _loadAuditLogsForOrg(orgId);
+    } else {
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadAuditLogsForOrg(String orgId) async {
+    _loadedOrgId = orgId;
+    if (mounted) setState(() => _isLoading = true);
+    try {
+      final list = await _auditRepo.getAuditLogs(orgId);
+      if (mounted) {
+        setState(() {
+          _logs = list;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(authNotifierProvider).state;
+    final orgId = session.activeOrganization?.id;
+
+    if (orgId != null && orgId != _loadedOrgId && !_isLoading) {
+      Future.microtask(() => _loadAuditLogsForOrg(orgId));
+    } else if (orgId == null && _isLoading) {
+      Future.microtask(() {
+        if (mounted && _isLoading) setState(() => _isLoading = false);
+      });
+    }
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }

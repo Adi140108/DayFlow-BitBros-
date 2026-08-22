@@ -91,7 +91,7 @@ class AppStatCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.xs),
                   decoration: BoxDecoration(
-                    color: (iconColor ?? AppColors.primary).withOpacity(0.1),
+                    color: (iconColor ?? AppColors.primary).withValues(alpha: 0.1),
                     borderRadius: AppRadius.borderSm,
                   ),
                   child: Icon(icon, size: 18, color: iconColor ?? AppColors.primary),
@@ -113,7 +113,7 @@ class AppStatCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: 2),
                     decoration: BoxDecoration(
-                      color: (badgeColor ?? AppColors.success).withOpacity(0.15),
+                      color: (badgeColor ?? AppColors.success).withValues(alpha: 0.15),
                       borderRadius: AppRadius.borderSm,
                     ),
                     child: Text(

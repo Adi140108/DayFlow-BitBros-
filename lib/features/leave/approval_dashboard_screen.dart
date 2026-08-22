@@ -192,19 +192,73 @@ class _ApprovalDashboardScreenState extends ConsumerState<ApprovalDashboardScree
   }
 
   Future<void> _review(String requestId, bool approve) async {
+    final commentController = TextEditingController(
+      text: approve ? 'Approved by HR/Admin' : 'Rejected by HR/Admin',
+    );
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Text(approve ? 'Approve Leave Request' : 'Reject Leave Request'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                approve
+                    ? 'Confirm approval of this employee leave request.'
+                    : 'Confirm rejection of this employee leave request.',
+                style: AppTypography.bodySmall,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextField(
+                controller: commentController,
+                decoration: const InputDecoration(
+                  labelText: 'Admin Review Comments (Optional)',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 2,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: approve ? AppColors.success : AppColors.error,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(approve ? 'Approve Request' : 'Reject Request'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
     final session = ref.read(authNotifierProvider).state;
+    final comment = commentController.text.trim().isEmpty
+        ? (approve ? 'Approved by HR' : 'Rejected by HR')
+        : commentController.text.trim();
+
     try {
       if (approve) {
         await _leaveRepo.approveLeaveRequest(
           requestId: requestId,
           approverId: session.user!.uid,
-          reviewerComment: 'Approved by HR/Manager',
+          reviewerComment: comment,
         );
       } else {
         await _leaveRepo.rejectLeaveRequest(
           requestId: requestId,
           approverId: session.user!.uid,
-          reviewerComment: 'Rejected by HR/Manager',
+          reviewerComment: comment,
         );
       }
       await _loadData();

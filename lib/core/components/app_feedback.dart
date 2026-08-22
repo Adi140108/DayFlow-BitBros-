@@ -169,7 +169,7 @@ class AppAlertBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: AppRadius.borderMd,
-        border: Border.all(color: foregroundColor.withOpacity(0.2)),
+        border: Border.all(color: foregroundColor.withValues(alpha: 0.2)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

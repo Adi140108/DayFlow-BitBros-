@@ -22,31 +22,52 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   List<ReportMetadata> _reports = [];
   bool _isLoading = true;
   bool _isGenerating = false;
+  String? _loadedOrgId;
 
   @override
   void initState() {
     super.initState();
-    _loadReports();
+    _checkAndLoad();
   }
 
-  Future<void> _loadReports() async {
+  void _checkAndLoad() {
     final session = ref.read(authNotifierProvider).state;
-    if (session.activeOrganization == null) return;
-
-    setState(() => _isLoading = true);
-    try {
-      final list = await _reportRepo.getReports(session.activeOrganization!.id);
-      setState(() {
-        _reports = list;
-        _isLoading = false;
-      });
-    } catch (e) {
+    final orgId = session.activeOrganization?.id;
+    if (orgId != null) {
+      _loadReportsForOrg(orgId);
+    } else {
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadReportsForOrg(String orgId) async {
+    _loadedOrgId = orgId;
+    if (mounted) setState(() => _isLoading = true);
+    try {
+      final list = await _reportRepo.getReports(orgId);
+      if (mounted) {
+        setState(() {
+          _reports = list;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final session = ref.watch(authNotifierProvider).state;
+    final orgId = session.activeOrganization?.id;
+
+    if (orgId != null && orgId != _loadedOrgId && !_isLoading) {
+      Future.microtask(() => _loadReportsForOrg(orgId));
+    } else if (orgId == null && _isLoading) {
+      Future.microtask(() {
+        if (mounted && _isLoading) setState(() => _isLoading = false);
+      });
+    }
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -123,7 +144,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       );
 
       await _reportRepo.saveReportMetadata(meta);
-      await _loadReports();
+      _checkAndLoad();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

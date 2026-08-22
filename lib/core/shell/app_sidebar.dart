@@ -21,13 +21,10 @@ const List<NavItemData> kAppNavItems = [
   NavItemData(title: 'Dashboard', icon: Icons.dashboard_outlined, route: '/dashboard'),
   NavItemData(title: 'Employees', icon: Icons.people_outline, route: '/employees'),
   NavItemData(title: 'Attendance', icon: Icons.access_time_outlined, route: '/attendance'),
-  NavItemData(title: 'Leave', icon: Icons.event_note_outlined, route: '/leave'),
+  NavItemData(title: 'Leave & Time-Off', icon: Icons.event_note_outlined, route: '/leave'),
   NavItemData(title: 'Payroll', icon: Icons.payments_outlined, route: '/payroll'),
-  NavItemData(title: 'Documents', icon: Icons.folder_open_outlined, route: '/documents'),
-  NavItemData(title: 'Reports', icon: Icons.bar_chart_outlined, route: '/reports'),
-  NavItemData(title: 'Analytics', icon: Icons.insights_outlined, route: '/analytics'),
-  NavItemData(title: 'Notifications', icon: Icons.notifications_none_outlined, route: '/notifications'),
-  NavItemData(title: 'Settings', icon: Icons.settings_outlined, route: '/settings'),
+  NavItemData(title: 'Reports & Analytics', icon: Icons.bar_chart_outlined, route: '/reports'),
+  NavItemData(title: 'Audit Trail', icon: Icons.security_outlined, route: '/audit'),
   NavItemData(title: 'Design System', icon: Icons.palette_outlined, route: '/design-system'),
 ];
 
@@ -123,7 +120,7 @@ class AppSidebar extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? AppColors.primary.withOpacity(0.12)
+                              ? AppColors.primary.withValues(alpha: 0.12)
                               : Colors.transparent,
                           borderRadius: AppRadius.borderMd,
                         ),
