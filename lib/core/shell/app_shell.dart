@@ -28,13 +28,8 @@ class _AppShellState extends State<AppShell> {
     if (location.startsWith('/employees')) return 'Employees';
     if (location.startsWith('/attendance')) return 'Attendance';
     if (location.startsWith('/leave')) return 'Leave Management';
-    if (location.startsWith('/payroll')) return 'Payroll';
-    if (location.startsWith('/documents')) return 'Documents';
-    if (location.startsWith('/reports')) return 'Reports';
-    if (location.startsWith('/analytics')) return 'Analytics';
-    if (location.startsWith('/notifications')) return 'Notifications';
-    if (location.startsWith('/settings')) return 'Settings';
-    if (location.startsWith('/design-system')) return 'Design System Preview';
+    if (location.startsWith('/payroll')) return 'Payroll & Compensation';
+    if (location.startsWith('/reports')) return 'Reports & Exports';
     return 'Dashboard';
   }
 

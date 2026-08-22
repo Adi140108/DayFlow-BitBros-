@@ -64,7 +64,7 @@ class PayrollRepository {
     final empSnapshot = await _firestore
         .collection('employees')
         .where('organizationId', isEqualTo: organizationId)
-        .where('employmentStatus', isEqualTo: 'active')
+        .where('status', isEqualTo: 'active')
         .get();
 
     final now = DateTime.now();
@@ -72,6 +72,9 @@ class PayrollRepository {
 
     for (var empDoc in empSnapshot.docs) {
       final empId = empDoc.id;
+      final empData = empDoc.data();
+      final userId = empData['userId'] as String? ?? empId;
+
       SalaryStructure? struct = await getEffectiveSalaryStructure(empId, period.startDate);
 
       struct ??= SalaryStructure(
@@ -87,7 +90,23 @@ class PayrollRepository {
         ],
       );
 
-      final calcResult = PayrollEngine.calculate(structure: struct);
+      // Query attendance records for the period to calculate overtime
+      final attSnap = await _firestore
+          .collection('attendance_records')
+          .where('employeeId', isEqualTo: userId)
+          .get();
+
+      double totalOvertimeHours = 0.0;
+      for (var doc in attSnap.docs) {
+        final rec = doc.data();
+        final ot = (rec['overtimeMinutes'] as int? ?? 0);
+        totalOvertimeHours += ot / 60.0;
+      }
+
+      final calcResult = PayrollEngine.calculate(
+        structure: struct,
+        payableOvertimeHours: totalOvertimeHours,
+      );
       final recordRef = _firestore.collection('payroll_records').doc('${periodId}_$empId');
 
       final record = PayrollRecord(
@@ -180,6 +199,24 @@ class PayrollRepository {
         .get();
 
     return snapshot.docs.map((doc) => Payslip.fromMap(doc.data())).toList();
+  }
+
+  /// Creates a new payroll period
+  Future<PayrollPeriod> createPayrollPeriod(PayrollPeriod period) async {
+    final ref = _firestore.collection('payroll_periods').doc(period.id.isNotEmpty ? period.id : null);
+    final toSave = PayrollPeriod(
+      id: ref.id,
+      organizationId: period.organizationId,
+      name: period.name,
+      startDate: period.startDate,
+      endDate: period.endDate,
+      payDate: period.payDate,
+      status: period.status,
+      frequency: period.frequency,
+      createdAt: period.createdAt,
+    );
+    await ref.set(toSave.toMap(), SetOptions(merge: true));
+    return toSave;
   }
 
   /// Fetches payroll periods for organization

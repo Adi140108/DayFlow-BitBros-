@@ -11,7 +11,7 @@ import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 
-/// Creation and Editing form dialog for Employee records.
+/// Creation and Comprehensive Editing form dialog for ALL Employee fields.
 class EmployeeFormDialog extends ConsumerStatefulWidget {
   final Employee? employee;
 
@@ -22,10 +22,27 @@ class EmployeeFormDialog extends ConsumerStatefulWidget {
 }
 
 class _EmployeeFormDialogState extends ConsumerState<EmployeeFormDialog> {
+  // Personal Info Controllers
   final _fullNameController = TextEditingController();
+  final _displayNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _dobController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _emergencyContactController = TextEditingController();
+  final _avatarUrlController = TextEditingController();
+
+  // Job & Org Info Controllers
+  final _departmentController = TextEditingController();
+  final _designationController = TextEditingController();
+  final _locationController = TextEditingController();
+  final _managerController = TextEditingController();
+  final _joiningDateController = TextEditingController();
+
+  String _gender = 'unspecified';
   String _employmentType = 'full_time';
+  String _status = 'active';
+
   bool _isLoading = false;
   String? _error;
 
@@ -33,10 +50,23 @@ class _EmployeeFormDialogState extends ConsumerState<EmployeeFormDialog> {
   void initState() {
     super.initState();
     if (widget.employee != null) {
-      _fullNameController.text = widget.employee!.fullName;
-      _emailController.text = widget.employee!.email;
-      _phoneController.text = widget.employee!.phone ?? '';
-      _employmentType = widget.employee!.employmentType;
+      final e = widget.employee!;
+      _fullNameController.text = e.fullName;
+      _displayNameController.text = e.displayName ?? e.fullName;
+      _emailController.text = e.email;
+      _phoneController.text = e.phone ?? '';
+      _dobController.text = e.dateOfBirth ?? '';
+      _addressController.text = e.address ?? '';
+      _emergencyContactController.text = e.emergencyContact ?? '';
+      _avatarUrlController.text = e.avatarUrl ?? '';
+      _departmentController.text = e.departmentId ?? '';
+      _designationController.text = e.designationId ?? '';
+      _locationController.text = e.locationId ?? '';
+      _managerController.text = e.managerId ?? '';
+      _joiningDateController.text = e.joiningDate ?? '';
+      _gender = e.gender ?? 'unspecified';
+      _employmentType = e.employmentType;
+      _status = e.status;
     }
   }
 
@@ -49,55 +79,226 @@ class _EmployeeFormDialogState extends ConsumerState<EmployeeFormDialog> {
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.borderLg),
       backgroundColor: isDark ? AppColors.darkSurface : AppColors.lightSurface,
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 480),
+        constraints: const BoxConstraints(maxWidth: 720, maxHeight: 750),
         child: Padding(
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                isEditing ? 'Edit Employee Record' : 'Add New Employee',
-                style: AppTypography.sectionHeading,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              AppTextField(
-                label: 'Full Name',
-                hintText: 'John Doe',
-                controller: _fullNameController,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              AppTextField(
-                label: 'Work Email',
-                hintText: 'john@company.com',
-                controller: _emailController,
-                readOnly: isEditing,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              AppTextField(
-                label: 'Phone Number',
-                hintText: '+1 555-0199',
-                controller: _phoneController,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              AppDropdown<String>(
-                label: 'Employment Type',
-                value: _employmentType,
-                items: const [
-                  DropdownMenuItem(value: 'full_time', child: Text('Full Time')),
-                  DropdownMenuItem(value: 'part_time', child: Text('Part Time')),
-                  DropdownMenuItem(value: 'contract', child: Text('Contract')),
-                  DropdownMenuItem(value: 'intern', child: Text('Intern')),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    isEditing ? 'Edit Full Employee Record' : 'Add New Employee',
+                    style: AppTypography.sectionHeading,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(false),
+                  ),
                 ],
-                onChanged: (val) {
-                  if (val != null) setState(() => _employmentType = val);
-                },
+              ),
+              const Divider(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Section 1: Personal Details
+                      Text('1. Personal Information', style: AppTypography.label.copyWith(color: AppColors.primary)),
+                      const SizedBox(height: AppSpacing.sm),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Full Name *',
+                              hintText: 'Jane Doe',
+                              controller: _fullNameController,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Display / Preferred Name',
+                              hintText: 'Jane',
+                              controller: _displayNameController,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Work Email *',
+                              hintText: 'jane@company.com',
+                              controller: _emailController,
+                              readOnly: isEditing,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Phone Number',
+                              hintText: '+91 98765 43210',
+                              controller: _phoneController,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Date of Birth (YYYY-MM-DD)',
+                              hintText: '1995-06-15',
+                              controller: _dobController,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: AppDropdown<String>(
+                              label: 'Gender',
+                              value: _gender,
+                              items: const [
+                                DropdownMenuItem(value: 'unspecified', child: Text('Prefer not to say')),
+                                DropdownMenuItem(value: 'female', child: Text('Female')),
+                                DropdownMenuItem(value: 'male', child: Text('Male')),
+                                DropdownMenuItem(value: 'other', child: Text('Other')),
+                              ],
+                              onChanged: (val) {
+                                if (val != null) setState(() => _gender = val);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      AppTextField(
+                        label: 'Residential Address',
+                        hintText: 'Street address, City, Postal Code',
+                        controller: _addressController,
+                        maxLines: 2,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Emergency Contact Info',
+                              hintText: 'e.g. John Doe (+91 98765 43211)',
+                              controller: _emergencyContactController,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Avatar / Profile Image URL',
+                              hintText: 'https://...',
+                              controller: _avatarUrlController,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+
+                      // Section 2: Job & Organization Details
+                      Text('2. Job & Organizational Details', style: AppTypography.label.copyWith(color: AppColors.primary)),
+                      const SizedBox(height: AppSpacing.sm),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Department',
+                              hintText: 'e.g. Engineering, Sales, HR',
+                              controller: _departmentController,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Designation / Job Title',
+                              hintText: 'e.g. Senior Software Engineer',
+                              controller: _designationController,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Work Location / Office',
+                              hintText: 'e.g. Bangalore Campus / Remote',
+                              controller: _locationController,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Reporting Manager ID / Name',
+                              hintText: 'e.g. EMP-001 or Manager Name',
+                              controller: _managerController,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppTextField(
+                              label: 'Joining Date (YYYY-MM-DD)',
+                              hintText: '2025-01-15',
+                              controller: _joiningDateController,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: AppDropdown<String>(
+                              label: 'Employment Type',
+                              value: _employmentType,
+                              items: const [
+                                DropdownMenuItem(value: 'full_time', child: Text('Full Time')),
+                                DropdownMenuItem(value: 'part_time', child: Text('Part Time')),
+                                DropdownMenuItem(value: 'contract', child: Text('Contract')),
+                                DropdownMenuItem(value: 'intern', child: Text('Intern')),
+                              ],
+                              onChanged: (val) {
+                                if (val != null) setState(() => _employmentType = val);
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      AppDropdown<String>(
+                        label: 'Employee Status',
+                        value: _status,
+                        items: const [
+                          DropdownMenuItem(value: 'active', child: Text('Active')),
+                          DropdownMenuItem(value: 'onboarding', child: Text('Onboarding')),
+                          DropdownMenuItem(value: 'suspended', child: Text('Suspended')),
+                          DropdownMenuItem(value: 'exited', child: Text('Exited')),
+                        ],
+                        onChanged: (val) {
+                          if (val != null) setState(() => _status = val);
+                        },
+                      ),
+                    ],
+                  ),
+                ),
               ),
               if (_error != null) ...[
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.sm),
                 Text(_error!, style: AppTypography.caption.copyWith(color: AppColors.error)),
               ],
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.md),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -107,7 +308,7 @@ class _EmployeeFormDialogState extends ConsumerState<EmployeeFormDialog> {
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   AppButton(
-                    label: isEditing ? 'Save Changes' : 'Create Employee',
+                    label: isEditing ? 'Save All Changes' : 'Create Employee',
                     isLoading: _isLoading,
                     onPressed: _save,
                   ),
@@ -125,7 +326,7 @@ class _EmployeeFormDialogState extends ConsumerState<EmployeeFormDialog> {
     final email = _emailController.text.trim();
 
     if (name.isEmpty || email.isEmpty) {
-      setState(() => _error = 'Name and email are required.');
+      setState(() => _error = 'Full name and work email are required.');
       return;
     }
 
@@ -136,23 +337,78 @@ class _EmployeeFormDialogState extends ConsumerState<EmployeeFormDialog> {
 
     try {
       final repo = EmployeeRepository();
-      final notifier = ref.read(authNotifierProvider);
-      final session = notifier.state;
+      final session = ref.read(authNotifierProvider).state;
 
       if (widget.employee != null) {
         final updated = widget.employee!.copyWith(
           fullName: name,
-          phone: _phoneController.text.trim(),
+          displayName: _displayNameController.text.trim().isNotEmpty
+              ? _displayNameController.text.trim()
+              : name,
+          phone: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
+          dateOfBirth: _dobController.text.trim().isNotEmpty ? _dobController.text.trim() : null,
+          gender: _gender,
+          address: _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null,
+          emergencyContact: _emergencyContactController.text.trim().isNotEmpty
+              ? _emergencyContactController.text.trim()
+              : null,
+          avatarUrl: _avatarUrlController.text.trim().isNotEmpty
+              ? _avatarUrlController.text.trim()
+              : null,
+          departmentId: _departmentController.text.trim().isNotEmpty
+              ? _departmentController.text.trim()
+              : null,
+          designationId: _designationController.text.trim().isNotEmpty
+              ? _designationController.text.trim()
+              : null,
+          locationId: _locationController.text.trim().isNotEmpty
+              ? _locationController.text.trim()
+              : null,
+          managerId: _managerController.text.trim().isNotEmpty
+              ? _managerController.text.trim()
+              : null,
+          joiningDate: _joiningDateController.text.trim().isNotEmpty
+              ? _joiningDateController.text.trim()
+              : null,
           employmentType: _employmentType,
+          status: _status,
         );
         await repo.updateEmployee(updated);
       } else {
         await repo.createEmployee(
           organizationId: session.activeOrganization!.id,
           fullName: name,
+          displayName: _displayNameController.text.trim().isNotEmpty
+              ? _displayNameController.text.trim()
+              : name,
           email: email,
-          phone: _phoneController.text.trim(),
+          phone: _phoneController.text.trim().isNotEmpty ? _phoneController.text.trim() : null,
+          dateOfBirth: _dobController.text.trim().isNotEmpty ? _dobController.text.trim() : null,
+          gender: _gender,
+          address: _addressController.text.trim().isNotEmpty ? _addressController.text.trim() : null,
+          emergencyContact: _emergencyContactController.text.trim().isNotEmpty
+              ? _emergencyContactController.text.trim()
+              : null,
+          avatarUrl: _avatarUrlController.text.trim().isNotEmpty
+              ? _avatarUrlController.text.trim()
+              : null,
+          departmentId: _departmentController.text.trim().isNotEmpty
+              ? _departmentController.text.trim()
+              : null,
+          designationId: _designationController.text.trim().isNotEmpty
+              ? _designationController.text.trim()
+              : null,
+          locationId: _locationController.text.trim().isNotEmpty
+              ? _locationController.text.trim()
+              : null,
+          managerId: _managerController.text.trim().isNotEmpty
+              ? _managerController.text.trim()
+              : null,
+          joiningDate: _joiningDateController.text.trim().isNotEmpty
+              ? _joiningDateController.text.trim()
+              : null,
           employmentType: _employmentType,
+          status: _status,
         );
       }
       if (mounted) Navigator.of(context).pop(true);

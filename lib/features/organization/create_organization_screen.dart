@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/auth/auth_notifier.dart';
 import '../../core/components/app_button.dart';
+import '../../core/components/app_logo.dart';
 import '../../core/components/app_text_field.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radius.dart';
@@ -66,8 +67,8 @@ class _CreateOrganizationScreenState extends ConsumerState<CreateOrganizationScr
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Icon(Icons.business_outlined, size: 48, color: AppColors.primary),
-                  const SizedBox(height: AppSpacing.md),
+                  const Center(child: DayflowLogo(size: DayflowLogoSize.large)),
+                  const SizedBox(height: AppSpacing.lg),
                   Text(
                     'Setup Your Organization',
                     style: AppTypography.sectionHeading.copyWith(

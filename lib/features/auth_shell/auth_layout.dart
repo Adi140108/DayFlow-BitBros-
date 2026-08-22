@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/components/app_logo.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radius.dart';
 import '../../core/theme/app_spacing.dart';
@@ -43,36 +44,10 @@ class AuthLayout extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Brand Header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: AppRadius.borderMd,
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'D',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 22,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        'Dayflow',
-                        style: AppTypography.display.copyWith(
-                          fontSize: 26,
-                          color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                        ),
-                      ),
-                    ],
+                  const Center(
+                    child: DayflowLogo(
+                      size: DayflowLogoSize.large,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.xl),
                   Text(

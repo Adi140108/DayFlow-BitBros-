@@ -5,6 +5,7 @@ import '../organization/organization.dart';
 import '../organization/organization_membership.dart';
 import '../organization/organization_repository.dart';
 import 'app_permission.dart';
+import 'app_role.dart';
 import 'app_user.dart';
 import 'firebase_auth_service.dart';
 import 'role_permissions.dart';
@@ -25,6 +26,8 @@ class AuthSessionState {
   final Organization? activeOrganization;
   final OrganizationMembership? activeMembership;
   final String? errorMessage;
+
+  AppRole? get activeRole => activeMembership?.role;
 
   const AuthSessionState({
     required this.status,

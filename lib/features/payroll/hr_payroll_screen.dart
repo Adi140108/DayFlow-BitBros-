@@ -6,8 +6,10 @@ import '../../core/components/app_button.dart';
 import '../../core/components/app_card.dart';
 import '../../core/components/app_feedback.dart';
 import '../../core/components/app_table.dart';
+import '../../core/components/app_text_field.dart';
 import '../../core/payroll/payroll_period.dart';
 import '../../core/payroll/payroll_repository.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 
@@ -60,6 +62,12 @@ class _HRPayrollScreenState extends ConsumerState<HRPayrollScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Payroll Processing & Salary Management', style: AppTypography.pageTitle),
+              AppButton(
+                label: 'Create Pay Period',
+                icon: Icons.add,
+                size: AppButtonSize.small,
+                onPressed: _showCreatePeriodDialog,
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
@@ -90,9 +98,11 @@ class _HRPayrollScreenState extends ConsumerState<HRPayrollScreen> {
           const SizedBox(height: AppSpacing.md),
 
           if (_periods.isEmpty)
-            const AppEmptyState(
+            AppEmptyState(
               title: 'No Payroll Periods Configured',
               description: 'Configure your organization payroll periods to begin processing.',
+              actionLabel: 'Create Pay Period',
+              onAction: _showCreatePeriodDialog,
             )
           else
             AppTable(
@@ -150,6 +160,11 @@ class _HRPayrollScreenState extends ConsumerState<HRPayrollScreen> {
     try {
       await _payrollRepo.calculatePayrollForPeriod(session.activeOrganization!.id, periodId);
       await _loadPeriods();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Payroll calculations completed for all active employees.')),
+        );
+      }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
@@ -162,10 +177,132 @@ class _HRPayrollScreenState extends ConsumerState<HRPayrollScreen> {
     try {
       await _payrollRepo.publishPayrollPeriod(periodId);
       await _loadPeriods();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Payslips generated, published and notifications dispatched.')),
+        );
+      }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
+  }
+
+  Future<void> _showCreatePeriodDialog() async {
+    final now = DateTime.now();
+    final nameCtrl = TextEditingController(text: 'Payroll ${now.year}-${now.month.toString().padLeft(2, '0')}');
+    final startCtrl = TextEditingController(text: '${now.year}-${now.month.toString().padLeft(2, '0')}-01');
+    final endCtrl = TextEditingController(text: '${now.year}-${now.month.toString().padLeft(2, '0')}-28');
+    final payDateCtrl = TextEditingController(text: '${now.year}-${now.month.toString().padLeft(2, '0')}-28');
+    bool isSaving = false;
+    String? error;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Create New Payroll Period'),
+              content: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppTextField(
+                      label: 'Period Name *',
+                      hintText: 'e.g. September 2026 Payroll',
+                      controller: nameCtrl,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    AppTextField(
+                      label: 'Start Date (YYYY-MM-DD) *',
+                      hintText: '2026-09-01',
+                      controller: startCtrl,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    AppTextField(
+                      label: 'End Date (YYYY-MM-DD) *',
+                      hintText: '2026-09-30',
+                      controller: endCtrl,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    AppTextField(
+                      label: 'Payment Date (YYYY-MM-DD) *',
+                      hintText: '2026-09-30',
+                      controller: payDateCtrl,
+                    ),
+                    if (error != null) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(error!, style: AppTypography.caption.copyWith(color: AppColors.error)),
+                    ],
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: isSaving
+                      ? null
+                      : () async {
+                          final name = nameCtrl.text.trim();
+                          final start = startCtrl.text.trim();
+                          final end = endCtrl.text.trim();
+                          final payDate = payDateCtrl.text.trim();
+
+                          if (name.isEmpty || start.isEmpty || end.isEmpty) {
+                            setDialogState(() => error = 'All date fields and period name are required.');
+                            return;
+                          }
+
+                          setDialogState(() {
+                            isSaving = true;
+                            error = null;
+                          });
+
+                          try {
+                            final session = ref.read(authNotifierProvider).state;
+                            final newPeriod = PayrollPeriod(
+                              id: 'period_${DateTime.now().millisecondsSinceEpoch}',
+                              organizationId: session.activeOrganization!.id,
+                              name: name,
+                              startDate: start,
+                              endDate: end,
+                              payDate: payDate,
+                              status: 'open',
+                              createdAt: DateTime.now(),
+                            );
+
+                            final messenger = ScaffoldMessenger.of(context);
+                            final nav = Navigator.of(ctx);
+                            await _payrollRepo.createPayrollPeriod(newPeriod);
+                            nav.pop();
+                            if (mounted) {
+                              _loadPeriods();
+                              messenger.showSnackBar(
+                                const SnackBar(content: Text('New payroll period created successfully.')),
+                              );
+                            }
+                          } catch (e) {
+                            setDialogState(() {
+                              error = e.toString();
+                              isSaving = false;
+                            });
+                          }
+                        },
+                  child: isSaving
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Text('Create Period'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 }

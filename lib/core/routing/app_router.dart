@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../auth/app_role.dart';
 import '../auth/auth_notifier.dart';
 import '../shell/app_shell.dart';
 import '../../features/auth_shell/sign_in_presentation.dart';
@@ -18,8 +18,6 @@ import '../../features/payroll/employee_payroll_screen.dart';
 import '../../features/payroll/hr_payroll_screen.dart';
 import '../../features/dashboard/role_dashboard_screen.dart';
 import '../../features/reports/reports_screen.dart';
-import '../../features/audit/audit_viewer_screen.dart';
-import '../../features/design_system_preview/design_system_preview_page.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authNotifier = ref.watch(authNotifierProvider);
@@ -31,6 +29,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final session = authNotifier.state;
       final isAuthRoute = state.uri.toString().startsWith('/auth');
       final isOnboardingRoute = state.uri.toString() == '/onboarding/create-org';
+      final currentPath = state.uri.toString();
 
       switch (session.status) {
         case AuthSessionStatus.initializing:
@@ -47,6 +46,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return null;
         case AuthSessionStatus.authenticated:
           if (isAuthRoute || isOnboardingRoute) return '/dashboard';
+
+          // Multi-level Route-level Authorization Guards (Requirement 10 & 11)
+          final isOwnerOrAdmin = session.activeRole == AppRole.organizationOwner ||
+              session.activeRole == AppRole.admin;
+          final isHR = session.activeRole == AppRole.hrManager ||
+              session.activeRole == AppRole.hr;
+
+          if (!isOwnerOrAdmin && !isHR) {
+            // Employee role trying to access restricted Admin / HR routes
+            if (currentPath == '/attendance/manage') return '/attendance';
+            if (currentPath == '/leave/approvals') return '/leave';
+            if (currentPath == '/payroll/manage') return '/payroll';
+            if (currentPath == '/reports') return '/dashboard';
+          }
           return null;
       }
     },
@@ -132,51 +145,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             ],
           ),
           GoRoute(
-            path: '/documents',
-            builder: (context, state) => const _PlaceholderPage(title: 'Documents Domain Placeholder'),
-          ),
-          GoRoute(
             path: '/reports',
             builder: (context, state) => const ReportsScreen(),
-          ),
-          GoRoute(
-            path: '/audit',
-            builder: (context, state) => const AuditViewerScreen(),
-          ),
-          GoRoute(
-            path: '/analytics',
-            builder: (context, state) => const _PlaceholderPage(title: 'Analytics Domain Placeholder'),
-          ),
-          GoRoute(
-            path: '/notifications',
-            builder: (context, state) => const _PlaceholderPage(title: 'Notifications Domain Placeholder'),
-          ),
-          GoRoute(
-            path: '/settings',
-            builder: (context, state) => const _PlaceholderPage(title: 'Settings Domain Placeholder'),
-          ),
-          GoRoute(
-            path: '/design-system',
-            builder: (context, state) => const DesignSystemPreviewPage(),
           ),
         ],
       ),
     ],
   );
 });
-
-class _PlaceholderPage extends StatelessWidget {
-  final String title;
-
-  const _PlaceholderPage({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.headlineMedium,
-      ),
-    );
-  }
-}

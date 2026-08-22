@@ -49,4 +49,28 @@ class Shift {
       status: map['status'] as String? ?? 'active',
     );
   }
+
+  Shift copyWith({
+    String? id,
+    String? organizationId,
+    String? name,
+    String? startTime,
+    String? endTime,
+    String? timezone,
+    bool? isOvernight,
+    int? gracePeriodMinutes,
+    String? status,
+  }) {
+    return Shift(
+      id: id ?? this.id,
+      organizationId: organizationId ?? this.organizationId,
+      name: name ?? this.name,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      timezone: timezone ?? this.timezone,
+      isOvernight: isOvernight ?? this.isOvernight,
+      gracePeriodMinutes: gracePeriodMinutes ?? this.gracePeriodMinutes,
+      status: status ?? this.status,
+    );
+  }
 }

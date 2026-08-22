@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../auth/app_role.dart';
+import '../auth/auth_notifier.dart';
+import '../components/app_logo.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radius.dart';
 import '../theme/app_spacing.dart';
@@ -17,19 +21,8 @@ class NavItemData {
   });
 }
 
-const List<NavItemData> kAppNavItems = [
-  NavItemData(title: 'Dashboard', icon: Icons.dashboard_outlined, route: '/dashboard'),
-  NavItemData(title: 'Employees', icon: Icons.people_outline, route: '/employees'),
-  NavItemData(title: 'Attendance', icon: Icons.access_time_outlined, route: '/attendance'),
-  NavItemData(title: 'Leave & Time-Off', icon: Icons.event_note_outlined, route: '/leave'),
-  NavItemData(title: 'Payroll', icon: Icons.payments_outlined, route: '/payroll'),
-  NavItemData(title: 'Reports & Analytics', icon: Icons.bar_chart_outlined, route: '/reports'),
-  NavItemData(title: 'Audit Trail', icon: Icons.security_outlined, route: '/audit'),
-  NavItemData(title: 'Design System', icon: Icons.palette_outlined, route: '/design-system'),
-];
-
-/// Collapsible responsive navigation sidebar for Dayflow application shell.
-class AppSidebar extends StatelessWidget {
+/// Collapsible role-aware responsive navigation sidebar for Dayflow.
+class AppSidebar extends ConsumerWidget {
   final bool isCollapsed;
   final VoidCallback onToggleCollapse;
   final String currentRoute;
@@ -41,10 +34,42 @@ class AppSidebar extends StatelessWidget {
     required this.currentRoute,
   });
 
+  List<NavItemData> _getNavItemsForRole(AppRole? role) {
+    if (role == AppRole.organizationOwner || role == AppRole.admin) {
+      return const [
+        NavItemData(title: 'Dashboard', icon: Icons.dashboard_outlined, route: '/dashboard'),
+        NavItemData(title: 'Employees', icon: Icons.people_outline, route: '/employees'),
+        NavItemData(title: 'Attendance', icon: Icons.access_time_outlined, route: '/attendance/manage'),
+        NavItemData(title: 'Leave Approvals', icon: Icons.approval_outlined, route: '/leave/approvals'),
+        NavItemData(title: 'Payroll Control', icon: Icons.payments_outlined, route: '/payroll/manage'),
+        NavItemData(title: 'Reports & Exports', icon: Icons.bar_chart_outlined, route: '/reports'),
+      ];
+    } else if (role == AppRole.hrManager || role == AppRole.hr) {
+      return const [
+        NavItemData(title: 'Dashboard', icon: Icons.dashboard_outlined, route: '/dashboard'),
+        NavItemData(title: 'Employees', icon: Icons.people_outline, route: '/employees'),
+        NavItemData(title: 'Attendance', icon: Icons.access_time_outlined, route: '/attendance/manage'),
+        NavItemData(title: 'Leave Approvals', icon: Icons.approval_outlined, route: '/leave/approvals'),
+        NavItemData(title: 'Payroll Control', icon: Icons.payments_outlined, route: '/payroll/manage'),
+        NavItemData(title: 'Reports & Exports', icon: Icons.bar_chart_outlined, route: '/reports'),
+      ];
+    } else {
+      // Default: Employee Role
+      return const [
+        NavItemData(title: 'Dashboard', icon: Icons.dashboard_outlined, route: '/dashboard'),
+        NavItemData(title: 'My Attendance', icon: Icons.access_time_outlined, route: '/attendance'),
+        NavItemData(title: 'Leave & Time-Off', icon: Icons.event_note_outlined, route: '/leave'),
+        NavItemData(title: 'My Payslips', icon: Icons.payments_outlined, route: '/payroll'),
+      ];
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final width = isCollapsed ? 72.0 : 240.0;
+    final session = ref.watch(authNotifierProvider).state;
+    final navItems = _getNavItemsForRole(session.activeRole);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -59,39 +84,16 @@ class AppSidebar extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Branding Header
+          // Branding Header with unified DayflowLogo
           Container(
             height: 64.0,
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: AppRadius.borderMd,
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'D',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 20,
-                      ),
-                    ),
-                  ),
+                DayflowLogo(
+                  size: DayflowLogoSize.small,
+                  showText: !isCollapsed,
                 ),
-                if (!isCollapsed) ...[
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    'Dayflow',
-                    style: AppTypography.sectionHeading.copyWith(
-                      color: isDark ? AppColors.darkTextPrimary : AppColors.lightTextPrimary,
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
@@ -100,9 +102,9 @@ class AppSidebar extends StatelessWidget {
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-              itemCount: kAppNavItems.length,
+              itemCount: navItems.length,
               itemBuilder: (context, index) {
-                final item = kAppNavItems[index];
+                final item = navItems[index];
                 final isSelected = currentRoute.startsWith(item.route);
 
                 return Padding(

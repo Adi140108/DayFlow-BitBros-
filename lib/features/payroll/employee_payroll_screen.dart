@@ -10,6 +10,7 @@ import '../../core/payroll/payslip.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/utils/file_download_helper.dart';
 
 class EmployeePayrollScreen extends ConsumerStatefulWidget {
   const EmployeePayrollScreen({super.key});
@@ -115,8 +116,23 @@ class _EmployeePayrollScreenState extends ConsumerState<EmployeePayrollScreen> {
                     size: AppButtonSize.small,
                     icon: Icons.download,
                     onPressed: () {
+                      final payslipText = "========================================\n"
+                          "        DAYFLOW HRMS PAYSLIP STATEMENT\n"
+                          "========================================\n"
+                          "Period: ${p.payrollPeriodId}\n"
+                          "Employee ID / UID: ${p.employeeId}\n"
+                          "Published Date: ${p.publishedAt}\n"
+                          "Storage Path: ${p.storagePath}\n"
+                          "----------------------------------------\n"
+                          "Status: VERIFIED & PUBLISHED\n"
+                          "========================================\n";
+                      FileDownloadHelper.downloadTextFile(
+                        filename: "payslip_${p.payrollPeriodId}_${p.employeeId}.txt",
+                        content: payslipText,
+                        mimeType: "text/plain",
+                      );
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Downloading payslip PDF securely...')),
+                        SnackBar(content: Text('Downloading payslip for ${p.payrollPeriodId}...')),
                       );
                     },
                   ),

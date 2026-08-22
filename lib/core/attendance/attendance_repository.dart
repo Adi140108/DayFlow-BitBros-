@@ -3,6 +3,7 @@ import 'attendance_correction.dart';
 import 'attendance_engine.dart';
 import 'attendance_record.dart';
 import 'attendance_session.dart';
+import 'schedule_repository.dart';
 import 'shift.dart';
 
 /// Production Firestore repository for Attendance engine & Check-in/Check-out operations.
@@ -88,13 +89,7 @@ class AttendanceRepository {
     final checkInAt = activeSession.checkInAt;
 
     final effectiveShift = shift ??
-        const Shift(
-          id: 'default_shift',
-          organizationId: '',
-          name: 'Standard Shift',
-          startTime: '09:00',
-          endTime: '17:00',
-        );
+        await ScheduleRepository(firestore: _firestore).getEffectiveShift(organizationId);
 
     final calcResult = AttendanceEngine.calculate(
       checkInAt: checkInAt,
