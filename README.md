@@ -174,11 +174,7 @@ lib/
 - **Static Analysis**: Clean Dart code maintaining 0 errors and 0 analyzer warnings (`flutter analyze`).
 - **Database Rules**: Firestore security rules enforced across multi-tenant scopes to safeguard sensitive employee compensation and personal records.
 
----
 
-## 📄 License
-
-This project is licensed under the MIT License — see the repository for details.
 
 ---
 
