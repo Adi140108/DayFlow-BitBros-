@@ -148,5 +148,17 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create, update: if isAuthenticated();
     }
+
+    // Reports Engine
+    match /reports/{reportId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+    }
+
+    // Audit Logs
+    match /audit_logs/{auditId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+    }
   }
 }

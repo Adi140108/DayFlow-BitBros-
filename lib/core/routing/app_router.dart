@@ -16,6 +16,9 @@ import '../../features/leave/employee_leave_screen.dart';
 import '../../features/leave/approval_dashboard_screen.dart';
 import '../../features/payroll/employee_payroll_screen.dart';
 import '../../features/payroll/hr_payroll_screen.dart';
+import '../../features/dashboard/role_dashboard_screen.dart';
+import '../../features/reports/reports_screen.dart';
+import '../../features/audit/audit_viewer_screen.dart';
 import '../../features/design_system_preview/design_system_preview_page.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -83,7 +86,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/dashboard',
-            builder: (context, state) => const _PlaceholderPage(title: 'Dashboard'),
+            builder: (context, state) => const RoleDashboardScreen(),
           ),
           GoRoute(
             path: '/employees',
@@ -134,7 +137,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/reports',
-            builder: (context, state) => const _PlaceholderPage(title: 'Reports Domain Placeholder'),
+            builder: (context, state) => const ReportsScreen(),
+          ),
+          GoRoute(
+            path: '/audit',
+            builder: (context, state) => const AuditViewerScreen(),
           ),
           GoRoute(
             path: '/analytics',
