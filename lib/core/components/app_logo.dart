@@ -9,7 +9,7 @@ enum DayflowLogoSize {
   large,
 }
 
-/// Unified, consistent Dayflow Brand Logo component across all screens.
+/// Unified, consistent Dayflow Brand Logo component rendering official brand assets.
 class DayflowLogo extends StatelessWidget {
   final DayflowLogoSize size;
   final bool showText;
@@ -27,23 +27,19 @@ class DayflowLogo extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     double iconBoxSize;
-    double fontSize;
     double textFontSize;
 
     switch (size) {
       case DayflowLogoSize.small:
-        iconBoxSize = 32.0;
-        fontSize = 18.0;
+        iconBoxSize = 34.0;
         textFontSize = 18.0;
         break;
       case DayflowLogoSize.medium:
-        iconBoxSize = 38.0;
-        fontSize = 22.0;
+        iconBoxSize = 42.0;
         textFontSize = 22.0;
         break;
       case DayflowLogoSize.large:
-        iconBoxSize = 48.0;
-        fontSize = 28.0;
+        iconBoxSize = 64.0;
         textFontSize = 28.0;
         break;
     }
@@ -55,43 +51,63 @@ class DayflowLogo extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Container(
-          width: iconBoxSize,
-          height: iconBoxSize,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        ClipRRect(
+          borderRadius: AppRadius.borderMd,
+          child: Container(
+            width: iconBoxSize,
+            height: iconBoxSize,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: AppRadius.borderMd,
+              border: Border.all(
+                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                width: 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            borderRadius: AppRadius.borderMd,
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.25),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Text(
-              'D',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-                fontSize: fontSize,
-                fontFamily: 'Inter',
-              ),
+            child: Image.asset(
+              'assets/images/dayflow_logo.png',
+              width: iconBoxSize,
+              height: iconBoxSize,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF2563EB), Color(0xFF0D9488)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'D',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: iconBoxSize * 0.5,
+                        fontFamily: 'Inter',
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ),
         if (showText) ...[
           const SizedBox(width: 10),
           Text(
-            'Dayflow',
+            'DayFlow',
             style: AppTypography.display.copyWith(
               fontSize: textFontSize,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w800,
               color: effectiveTextColor,
               letterSpacing: -0.5,
             ),
