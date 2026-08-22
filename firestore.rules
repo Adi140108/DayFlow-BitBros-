@@ -100,5 +100,32 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create, update: if isAuthenticated();
     }
+
+    // Leave Engine Collections
+    match /leave_types/{typeId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /leave_policies/{policyId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /leave_balances/{balanceId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /leave_requests/{requestId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+    }
+
+    // In-App Notifications
+    match /notifications/{notifId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+    }
   }
 }

@@ -12,6 +12,8 @@ import '../../features/employees/employee_directory_screen.dart';
 import '../../features/employees/employee_details_screen.dart';
 import '../../features/attendance/employee_attendance_screen.dart';
 import '../../features/attendance/hr_attendance_screen.dart';
+import '../../features/leave/employee_leave_screen.dart';
+import '../../features/leave/approval_dashboard_screen.dart';
 import '../../features/design_system_preview/design_system_preview_page.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -106,7 +108,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/leave',
-            builder: (context, state) => const _PlaceholderPage(title: 'Leave Domain Placeholder'),
+            builder: (context, state) => const EmployeeLeaveScreen(),
+            routes: [
+              GoRoute(
+                path: 'approvals',
+                builder: (context, state) => const ApprovalDashboardScreen(),
+              ),
+            ],
           ),
           GoRoute(
             path: '/payroll',
