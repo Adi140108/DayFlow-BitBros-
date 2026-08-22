@@ -10,6 +10,8 @@ import '../../features/auth_shell/forgot_password_presentation.dart';
 import '../../features/organization/create_organization_screen.dart';
 import '../../features/employees/employee_directory_screen.dart';
 import '../../features/employees/employee_details_screen.dart';
+import '../../features/attendance/employee_attendance_screen.dart';
+import '../../features/attendance/hr_attendance_screen.dart';
 import '../../features/design_system_preview/design_system_preview_page.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -94,7 +96,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/attendance',
-            builder: (context, state) => const _PlaceholderPage(title: 'Attendance Domain Placeholder'),
+            builder: (context, state) => const EmployeeAttendanceScreen(),
+            routes: [
+              GoRoute(
+                path: 'manage',
+                builder: (context, state) => const HRAttendanceScreen(),
+              ),
+            ],
           ),
           GoRoute(
             path: '/leave',

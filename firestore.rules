@@ -74,5 +74,31 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow write: if isAuthenticated();
     }
+
+    // Attendance Engine Collections
+    match /schedules/{scheduleId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /shifts/{shiftId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /attendance_records/{recordId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+    }
+
+    match /attendance_sessions/{sessionId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+    }
+
+    match /attendance_corrections/{corrId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+    }
   }
 }
