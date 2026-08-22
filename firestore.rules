@@ -127,5 +127,26 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create, update: if isAuthenticated();
     }
+
+    // Payroll Subsystem Collections
+    match /salary_structures/{structId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /payroll_periods/{periodId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /payroll_records/{recordId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+    }
+
+    match /payslips/{payslipId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+    }
   }
 }
