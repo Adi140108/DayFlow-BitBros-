@@ -8,6 +8,8 @@ import '../../features/auth_shell/sign_up_presentation.dart';
 import '../../features/auth_shell/verification_presentation.dart';
 import '../../features/auth_shell/forgot_password_presentation.dart';
 import '../../features/organization/create_organization_screen.dart';
+import '../../features/employees/employee_directory_screen.dart';
+import '../../features/employees/employee_details_screen.dart';
 import '../../features/design_system_preview/design_system_preview_page.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -79,7 +81,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/employees',
-            builder: (context, state) => const _PlaceholderPage(title: 'Employees Domain Placeholder'),
+            builder: (context, state) => const EmployeeDirectoryScreen(),
+            routes: [
+              GoRoute(
+                path: ':id',
+                builder: (context, state) {
+                  final id = state.pathParameters['id']!;
+                  return EmployeeDetailsScreen(id: id);
+                },
+              ),
+            ],
           ),
           GoRoute(
             path: '/attendance',

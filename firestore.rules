@@ -3,19 +3,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions for security enforcement
     function isAuthenticated() {
       return request.auth != null;
     }
 
     function isUser(userId) {
       return isAuthenticated() && request.auth.uid == userId;
-    }
-
-    function isMemberOf(orgId) {
-      return isAuthenticated() &&
-        exists(/databases/$(database)/documents/memberships/$(request.auth.uid + '_' + orgId)) ||
-        exists(/databases/$(database)/documents/memberships/$(resource.data.id));
     }
 
     // Default deny-all posture
@@ -47,6 +40,39 @@ service cloud.firestore {
         resource.data.userId == request.auth.uid ||
         request.auth.uid == get(/databases/$(database)/documents/organizations/$(resource.data.organizationId)).data.ownerId
       );
+    }
+
+    // Employees Collection
+    match /employees/{employeeId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated();
+    }
+
+    // Counters for Employee ID generation
+    match /counters/{counterId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Departments, Designations, Locations
+    match /departments/{deptId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /designations/{desigId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    match /locations/{locId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+    }
+
+    // Employee Documents Metadata
+    match /documents/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
     }
   }
 }
