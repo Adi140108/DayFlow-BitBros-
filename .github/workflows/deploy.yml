@@ -1,0 +1,74 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Create .env Configuration
+        run: |
+          cat << 'EOF' > .env
+          FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY || 'AIzaSyBRB7Rs59Cp7JAqlI3nK4JmrVBy07LmpEE' }}
+          FIREBASE_APP_ID=${{ secrets.FIREBASE_APP_ID || '1:721525338638:web:c6632e8317760daaa2025f' }}
+          FIREBASE_MESSAGING_SENDER_ID=${{ secrets.FIREBASE_MESSAGING_SENDER_ID || '721525338638' }}
+          FIREBASE_PROJECT_NAME=${{ secrets.FIREBASE_PROJECT_NAME || 'DayFlow' }}
+          FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID || 'dayflow-bitbros' }}
+          FIREBASE_AUTH_DOMAIN=${{ secrets.FIREBASE_AUTH_DOMAIN || 'dayflow-bitbros.firebaseapp.com' }}
+          FIREBASE_STORAGE_BUCKET=${{ secrets.FIREBASE_STORAGE_BUCKET || 'dayflow-bitbros.firebasestorage.app' }}
+          FIREBASE_MEASUREMENT_ID=${{ secrets.FIREBASE_MEASUREMENT_ID || 'G-Q40EXW1G63' }}
+          CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY || '897987686462425' }}
+          CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME || 'orhokqmz' }}
+          B2_KEY_ID=${{ secrets.B2_KEY_ID || '0054a58cd7fac360000000001' }}
+          B2_APPLICATION_KEY=${{ secrets.B2_APPLICATION_KEY || 'K005SG9re/5RdvDA8WqWGGlmGicZvgA' }}
+          B2_BUCKET_NAME=${{ secrets.B2_BUCKET_NAME || 'dayflow-production-files' }}
+          B2_ENDPOINT=${{ secrets.B2_ENDPOINT || 's3.us-east-005.backblazeb2.com' }}
+          EOF
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      - name: Build Web Application
+        run: |
+          flutter build web --release --base-href "/DayFlow-BitBros-/"
+          cp build/web/index.html build/web/404.html
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
